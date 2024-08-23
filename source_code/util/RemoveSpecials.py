@@ -1,17 +1,20 @@
-function wp = ReinhardWhitePoint(L)
+import numpy as np
+
+"""
 %
 %
-%      alpha = ReinhardWhitePoint(L)
+%       img = RemoveSpecials(img, clamping_value)
 %
-%       This function estimates the white point wp for ReinhardTMO
+%       This function removes specials: Inf and NaN
 %
 %       Input:
-%           -L: luminance channel 
+%           -img: an image which can contain float special values
+%           -clamping_value:
 %
 %       Output:
-%           -wp: the white point
-% 
-%     Copyright (C) 2013  Francesco Banterle
+%           -img: the image without float special values
+%
+%     Copyright (C) 2011-15  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -26,13 +29,8 @@ function wp = ReinhardWhitePoint(L)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
+"""
 
-LMin = min(L(L>0));
-LMax = max(L(L>0));
 
-log2Min = log2(LMin + 1e-6);
-log2Max = log2(LMax + 1e-6);
-
-wp = 1.5 * 2^(log2Max - log2Min - 5);
-
-end
+def RemoveSpecials(img, clamping_value=0):
+    return np.nan_to_num(img, nan=clamping_value, posinf=clamping_value, neginf=clamping_value)

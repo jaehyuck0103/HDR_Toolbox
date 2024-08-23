@@ -1,13 +1,16 @@
-function check13Color(img)
+"""
 %
 %
-%        check13Color(img)
+%      alpha = ReinhardWhitePoint(L)
 %
+%       This function estimates the white point wp for ReinhardTMO
 %
-%        Input:
-%           -img: an image to be tested if it is an one or three color
-%                 channels image
+%       Input:
+%           -L: luminance channel 
 %
+%       Output:
+%           -wp: the white point
+% 
 %     Copyright (C) 2013  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
@@ -23,8 +26,19 @@ function check13Color(img)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
+"""
 
-col = size(img, 3);
-if(col ~= 3 && col ~= 1)
-    error('The image has to be an RGB or luminance image.');
-end
+import math
+
+import numpy as np
+
+
+def ReinhardWhitePoint(L: np.ndarray):
+
+    LMin = L[L > 0].min()
+    LMax = L[L > 0].max()
+
+    log2Min = math.log2(LMin + 1e-6)
+    log2Max = math.log2(LMax + 1e-6)
+    wp = 1.5 * 2 ** (log2Max - log2Min - 5)
+    return wp

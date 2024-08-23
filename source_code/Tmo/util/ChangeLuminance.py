@@ -1,18 +1,20 @@
-function alpha = ReinhardAlpha(L, delta)
+"""
 %
+%       imgOut = ChangeLuminance(img, Lold, Lnew, bEpsilon)
 %
-%      alpha = ReinhardAlpha(L, delta)
-%
-%       This function estimates the exposure, \alpha, for ReinhardTMO
 %
 %       Input:
-%           -L: luminance channel 
+%           -img: input image
+%           -Lold: old luminance
+%           -Lnew: new luminance
+%           -bEpsilon: a boolean value to avoid division by zero, 
+%                      this add e=1e-6 to Lold
 %
-%       Output:
-%           -alpha: exposure
+%       Output
+%           -imgOut: output image with Lnew luminance
 % 
-%     Copyright (C) 2013  Francesco Banterle
-% 
+%     Copyright (C) 2013-2023  Francesco Banterle
+%
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
 %     the Free Software Foundation, either version 3 of the License, or
@@ -26,19 +28,19 @@ function alpha = ReinhardAlpha(L, delta)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
+"""
 
-if(~exist('delta', 'var'))
-    delta = 1e-6;
-end
+import numpy as np
 
-LMin = MaxQuart(L, 0.01);
-LMax = MaxQuart(L, 0.99);
+from source_code.util.RemoveSpecials import RemoveSpecials
 
-log2Min     = log2(LMin + delta);
-log2Max     = log2(LMax + delta);
-logAverage  = logMean(L);
-log2Average = log2(logAverage + delta);
 
-alpha = 0.18*4^((2.0*log2Average - log2Min - log2Max)/( log2Max - log2Min));
+def ChangeLuminance(img, Lold, Lnew, bEpsilon=False):
 
-end
+    if bEpsilon:
+        Lold = Lold + 1e-6
+
+    img = img * Lnew[:, :, np.newaxis] / Lold[:, :, np.newaxis]
+    img = RemoveSpecials(img)
+
+    return img

@@ -1,4 +1,4 @@
-function [imgOut, pAlpha, pWhite] = ReinhardTMO(img, pAlpha, pWhite, pLocal, pPhi, Lwa)
+"""
 %
 %
 %      [imgOut, pAlpha, pWhite] = ReinhardTMO(img, pAlpha, pWhite, pLocal, pPhi)
@@ -41,74 +41,57 @@ function [imgOut, pAlpha, pWhite] = ReinhardTMO(img, pAlpha, pWhite, pLocal, pPh
 % 	  by Erik Reinhard, Michael Stark, Peter Shirley, James Ferwerda
 %     in Proceedings of SIGGRAPH 2002
 %
+"""
 
-check13Color(img);
+from source_code.ColorSpace.lum import lum
+from source_code.Tmo.util.ChangeLuminance import ChangeLuminance
+from source_code.Tmo.util.logMean import logMean
+from source_code.Tmo.util.ReinhardAlpha import ReinhardAlpha
+from source_code.Tmo.util.ReinhardWhitePoint import ReinhardWhitePoint
+from source_code.util.check13Color import check13Color
 
-%Luminance channel
-L = lum(img);
 
-if(~exist('pLocal', 'var'))
-    pLocal = 'global';
-end
+def ReinhardTMO(img, pAlpha=None, pWhite=None, pLocal="global", pPhi=8, Lwa=None):
 
-if(~exist('pAlpha', 'var'))
-    pAlpha = ReinhardAlpha(L);
-else
-    if(pAlpha <= 0)
-        pAlpha = ReinhardAlpha(L);
-    end
-end
+    check13Color(img)
 
-if(~exist('pWhite', 'var'))
-    pWhite = ReinhardWhitePoint(L);
-else
-    if(pWhite <= 0)
-        pWhite = ReinhardWhitePoint(L);
-    end
-end
+    # Luminance channel
+    L = lum(img)
 
-if(~exist('pPhi', 'var'))
-    pPhi = 8;
-else
-    if(pPhi < 0)
-        pPhi = 8;
-    end
-end
+    if pAlpha is None:
+        pAlpha = ReinhardAlpha(L)
 
-%compute logarithmic mean
-if(~exist('Lwa', 'var'))
-    Lwa = logMean(L);
-else
-    if(Lwa < 0.0)
-        Lwa = logMean(L);        
-    end
-end
+    if pWhite is None:
+        pWhite = ReinhardWhitePoint(L)
 
-%scale luminance using alpha and logarithmic mean
-Lscaled = (pAlpha * L) ./ Lwa;
+    # compute logarithmic mean
+    if Lwa is None:
+        Lwa = logMean(L)
 
-%compute adaptation
-switch pLocal
-    case 'global'
-        L_adapt = Lscaled;
-        
-    case 'local'
-        L_adapt = ReinhardFiltering(Lscaled, pAlpha, pPhi);
+    assert pAlpha > 0
+    assert pWhite > 0
+    assert pPhi >= 0
+    assert Lwa >= 0
 
-    case 'bilateral'
-        L_adapt = ReinhardBilateralFiltering(Lscaled, pAlpha, pPhi);
-        
-    case 'mean'
-        L_adapt = filterGaussian(Lscaled, pPhi);
-        
-    otherwise
-        L_adapt = Lscaled;        
-end
+    # scale luminance using alpha and logarithmic mean
+    Lscaled = (pAlpha * L) / Lwa
 
-%range compression
-Ld = (Lscaled .* (1 + Lscaled / pWhite^2)) ./ (1 + L_adapt);
+    # compute adaptation
+    if pLocal == "global":
+        L_adapt = Lscaled
+    elif pLocal == "local":
+        L_adapt = ReinhardFiltering(Lscaled, pAlpha, pPhi)
+    elif pLocal == "bilateral":
+        L_adapt = ReinhardBilateralFiltering(Lscaled, pAlpha, pPhi)
+    elif pLocal == "mean":
+        L_adapt = filterGaussian(Lscaled, pPhi)
+    else:
+        raise ValueError(pLocal)
 
-%change luminance
-imgOut = ChangeLuminance(img, L, Ld);
+    # range compression
+    Ld = (Lscaled * (1 + Lscaled / pWhite**2)) / (1 + L_adapt)
 
-end
+    # change luminance
+    imgOut = ChangeLuminance(img, L, Ld)
+
+    return imgOut

@@ -1,17 +1,17 @@
-function ret = MaxQuart(matrix, percentile)
+"""
 %
 %
-%       ret = MaxQuart(matrix, percentile)
+%      alpha = ReinhardAlpha(L, delta)
 %
+%       This function estimates the exposure, \alpha, for ReinhardTMO
 %
 %       Input:
-%           -matrix: a matrix
-%           -percentile: a value in the range [0,1]
+%           -L: luminance channel 
 %
 %       Output:
-%           -ret: the percentile of the input matrix
-%
-%     Copyright (C) 2011-2015  Francesco Banterle
+%           -alpha: exposure
+% 
+%     Copyright (C) 2013  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -26,20 +26,23 @@ function ret = MaxQuart(matrix, percentile)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
+"""
 
-if(percentile > 1.0)
-    percentile = 1.0;
-end
+import math
 
-if(percentile < 0.0)
-    percentile = 0.0;
-end
+from source_code.Analysis.MaxQuart import MaxQuart
+from source_code.Tmo.util.logMean import logMean
 
-[n, m] = size(matrix);
 
-matrix = sort(reshape(matrix, n * m, 1));
-index = round(n * m * percentile);
-index = max([index 1]);
-ret = matrix(index);
+def ReinhardAlpha(L, delta=1e-6):
 
-end
+    LMin = MaxQuart(L, 0.01)
+    LMax = MaxQuart(L, 0.99)
+
+    log2Min = math.log2(LMin + delta)
+    log2Max = math.log2(LMax + delta)
+    logAverage = logMean(L)
+    log2Average = math.log2(logAverage + delta)
+
+    alpha = 0.18 * 4 ** ((2.0 * log2Average - log2Min - log2Max) / (log2Max - log2Min))
+    return alpha

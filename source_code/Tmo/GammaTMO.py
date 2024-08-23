@@ -1,4 +1,4 @@
-function imgOut = GammaTMO(img, TMO_gamma, TMO_fstop, TMO_view)
+"""
 %
 %        imgOut = GammaTMO(img, TMO_gamma, TMO_fstop, TMO_view);
 %
@@ -30,33 +30,23 @@ function imgOut = GammaTMO(img, TMO_gamma, TMO_fstop, TMO_view)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
+"""
 
-checkNegative(img);
+import numpy as np
 
-if(~exist('TMO_gamma','var'))
-    TMO_gamma = 2.2;
-end
+from source_code.util.checkNegative import checkNegative
 
-if(TMO_gamma <= 0.0)
-    error('TMO_gamma must be a positive scalar.');
-end
 
-if(~exist('TMO_fstop','var'))
-    TMO_fstop = 0.0;
-end
+def GammaTMO(img, TMO_gamma=2.2, TMO_fstop=0.0):
 
-if(~exist('TMO_view','var'))
-    TMO_view = 0;
-end
+    assert TMO_gamma > 0
 
-invGamma = 1.0 / TMO_gamma;
-exposure = 2.^TMO_fstop;
+    checkNegative(img)
 
-%clamping values out of the range [0.0,1.0]
-imgOut = ClampImg((exposure .* img).^invGamma, 0, 1);
+    invGamma = 1.0 / TMO_gamma
+    exposure = 2**TMO_fstop
 
-if(TMO_view)
-    imshow(imgOut);
-end
+    img = (exposure * img) ** invGamma
+    img = np.clip(img, 0, 1)
 
-end
+    return img

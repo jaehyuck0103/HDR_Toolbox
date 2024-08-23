@@ -1,17 +1,17 @@
-function l = lum(img)
-%
-%       l = lum(img)
-%
-%       This function calculates the luminance
+"""
 %
 %
-%       input:
-%           img: an RGB image encoded with sRGB primaries
+%       ret = MaxQuart(matrix, percentile)
 %
-%       output:
-%           l: luminance as XYZ color 
 %
-%     Copyright (C) 2011-13  Francesco Banterle
+%       Input:
+%           -matrix: a matrix
+%           -percentile: a value in the range [0,1]
+%
+%       Output:
+%           -ret: the percentile of the input matrix
+%
+%     Copyright (C) 2011-2015  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -26,19 +26,10 @@ function l = lum(img)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
+"""
 
-col = size(img, 3);
+import numpy as np
 
-switch col
-    case 1
-        l = img;
-        
-    case 3
-        l = 0.2126 * img(:,:,1) + 0.7152 * img(:,:,2) + 0.0722 * img(:,:,3);
-        
-    otherwise
-        l = mean(img, 3); 
-        disp('Mean of channels was computed; the input image is not an RGB or luminance image!');
-end
 
-end
+def MaxQuart(matrix, q):
+    return np.quantile(matrix, q)

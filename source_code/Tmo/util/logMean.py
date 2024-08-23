@@ -1,14 +1,18 @@
-function checkNegative(img)
+"""
 %
 %
-%        checkNegative(img)
+%        Lav = logMean(img, delta)
 %
+%       This function computes the geometric mean.
 %
 %        Input:
-%           -img: an image to be tested if it has negative values
+%           -img: an single channel image
 %
-%     Copyright (C) 2016  Francesco Banterle
+%        Output:
+%           -Lav: the logarithmic mean of img
 % 
+%     Copyright (C) 2010-13 Francesco Banterle
+%  
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
 %     the Free Software Foundation, either version 3 of the License, or
@@ -22,7 +26,12 @@ function checkNegative(img)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
+"""
 
-if(~isempty(find(img < 0.0, 1)))
-    error('The image has negative values!');
-end
+import math
+
+import numpy as np
+
+
+def logMean(img: np.ndarray, delta=1e-6):
+    return math.exp(np.log(img + delta).mean())

@@ -1,16 +1,18 @@
-function img = RemoveSpecials(img, clamping_value)
+import cv2
+import numpy as np
+
+from source_code.util.imColorOrder import swap_red_blue
+
+"""
+%
+%       img = ldrimread(filename, bDouble)
 %
 %
-%       img = RemoveSpecials(img, clamping_value)
+%        Input:
+%           -filename: the name of the file to open
 %
-%       This function removes specials: Inf and NaN
-%
-%       Input:
-%           -img: an image which can contain float special values
-%           -clamping_value:
-%
-%       Output:
-%           -img: the image without float special values
+%        Output:
+%           -img: the opened image
 %
 %     Copyright (C) 2011-15  Francesco Banterle
 % 
@@ -27,11 +29,26 @@ function img = RemoveSpecials(img, clamping_value)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
+"""
 
-if(~exist('clamping_value', 'var'))
-    clamping_value = 0;
-end
 
-img(isnan(img) | isinf(img)) = clamping_value;
+def ldrimread(filename, bDouble=True):
 
-end
+    img = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
+    orig_dtype = img.dtype
+
+    if bDouble:
+        img = img.astype(np.float64)
+    else:
+        img = img.astype(np.float32)
+
+    if orig_dtype == np.uint8:
+        img = img / 255
+    elif orig_dtype == np.uint16:
+        img = img / 65535
+    else:
+        raise ValueError(orig_dtype)
+
+    img = swap_red_blue(img)
+
+    return img

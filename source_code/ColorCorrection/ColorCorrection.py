@@ -1,4 +1,4 @@
-function imgOut = ColorCorrection(img, cc_s)
+"""
 %
 %       imgOut = ColorCorrection(img, cc_s)
 %
@@ -34,22 +34,20 @@ function imgOut = ColorCorrection(img, cc_s)
 % 	  by Christophe Schlick
 %     in Photorealistic Rendering Techniques, 1995
 %
+"""
 
-if(~exist('cc_s', 'var'))
-    cc_s = 0.5;
-end
+import numpy as np
 
-if(cc_s < 0.0)
-    cc_s = 0.5;
-end
+from source_code.ColorSpace.lum import lum
+from source_code.util.RemoveSpecials import RemoveSpecials
 
-L = lum(img);
-imgOut = zeros(size(img));
 
-for i=1:size(img, 3)
-    imgOut(:,:,i) = ((img(:,:,i) ./ L).^cc_s) .* L;
-end
+def ColorCorrection(img, cc_s=0.5):
 
-imgOut = RemoveSpecials(imgOut);
+    assert cc_s >= 0
 
-end
+    L = lum(img)
+    img = ((img / L[:, :, np.newaxis]) ** cc_s) * L[:, :, np.newaxis]
+    img = RemoveSpecials(img)
+
+    return img
